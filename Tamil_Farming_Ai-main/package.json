@@ -1,0 +1,10 @@
+{
+  "name": "uzhavan-kural",
+  "version": "1.0.0",
+  "description": "உழவன் குரல் - Tamil Farmer AI Assistant",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {}
+}

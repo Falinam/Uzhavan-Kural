@@ -1,0 +1,769 @@
+<!DOCTYPE html>
+<html lang="ta">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>உழவன் குரல் | Uzhavan Kural</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+Tamil:wght@400;600;700&family=Noto+Sans+Tamil:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --bg:       #0e1a0a;
+      --surface:  #131f0d;
+      --card:     #192810;
+      --border:   #243d16;
+      --green:    #5aac2e;
+      --green2:   #78d44a;
+      --lime:     #a8e063;
+      --gold:     #d4a017;
+      --gold2:    #f0bc2e;
+      --soil:     #8b5e3c;
+      --red:      #e05555;
+      --text:     #e8f5d8;
+      --muted:    #6a8a50;
+      --white:    #f0f8e8;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Noto Sans Tamil', sans-serif;
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+    button { cursor: pointer; font-family: inherit; border: none; background: none; }
+    textarea { font-family: inherit; }
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: var(--surface); }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--green); }
+
+    /* ── Top bar ── */
+    .topbar {
+      height: 4px;
+      background: linear-gradient(90deg, var(--soil), var(--gold), var(--green2), var(--lime), var(--green2), var(--gold), var(--soil));
+      position: fixed; top: 0; left: 0; width: 100%; z-index: 200;
+    }
+
+    /* ── Toast ── */
+    #toast {
+      display: none; position: fixed; top: 18px; right: 18px;
+      padding: 11px 20px; border-radius: 8px; font-size: .86rem; font-weight: 600;
+      z-index: 9999; max-width: 300px; animation: slideIn .3s ease;
+    }
+    #toast.success { background:#0e2e16; border:1px solid var(--green2); color:var(--green2); }
+    #toast.error   { background:#2e0e0e; border:1px solid var(--red);    color:var(--red); }
+    #toast.info    { background:#1e2a0e; border:1px solid var(--gold);   color:var(--gold2); }
+    @keyframes slideIn { from{transform:translateX(60px);opacity:0} to{transform:translateX(0);opacity:1} }
+
+    /* ── Header ── */
+    header {
+      padding: 54px 20px 28px;
+      text-align: center;
+      border-bottom: 1px solid var(--border);
+      background: linear-gradient(180deg, rgba(90,172,46,.08) 0%, transparent 100%);
+      position: relative;
+      overflow: hidden;
+    }
+    header::before {
+      content: '🌾';
+      position: absolute; left: 40px; top: 50%; transform: translateY(-50%);
+      font-size: 3rem; opacity: .15;
+    }
+    header::after {
+      content: '🌾';
+      position: absolute; right: 40px; top: 50%; transform: translateY(-50%);
+      font-size: 3rem; opacity: .15;
+    }
+    .app-icon { font-size: 3rem; margin-bottom: 8px; display: block; }
+    .title-ta {
+      font-family: 'Noto Serif Tamil', serif;
+      font-size: clamp(2.2rem, 7vw, 3.8rem);
+      font-weight: 700;
+      background: linear-gradient(135deg, #5aac2e, #a8e063, #78d44a);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+      line-height: 1.1;
+    }
+    .title-en {
+      display: block; font-size: .82rem; font-weight: 300;
+      letter-spacing: 5px; color: var(--muted); text-transform: uppercase; margin-top: 5px;
+    }
+    .tagline {
+      color: var(--muted); font-size: .88rem; margin-top: 8px;
+      font-style: italic; letter-spacing: .3px;
+    }
+    .badges { display: flex; justify-content: center; gap: 10px; margin-top: 14px; flex-wrap: wrap; }
+    .badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 4px 13px; border-radius: 20px; font-size: .73rem; font-weight: 600;
+    }
+    .badge-server { background:rgba(90,172,46,.1); color:var(--green2); border:1px solid rgba(90,172,46,.3); }
+    .badge-ollama { background:rgba(212,160,23,.1); color:var(--gold2); border:1px solid rgba(212,160,23,.3); }
+    .dot { width:6px;height:6px;border-radius:50%;background:currentColor;animation:pulse 1.5s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1}50%{opacity:.3} }
+
+    /* ── Tabs ── */
+    nav {
+      display: flex; justify-content: center; gap: 8px;
+      padding: 16px; background: var(--surface);
+      border-bottom: 1px solid var(--border); flex-wrap: wrap;
+    }
+    .tab {
+      display: flex; flex-direction: column; align-items: center; gap: 2px;
+      padding: 9px 20px; border-radius: 8px;
+      background: var(--card); border: 1px solid var(--border);
+      color: var(--muted); transition: all .2s; min-width: 135px; cursor: pointer;
+    }
+    .tab:hover { border-color: var(--green); color: var(--green2); }
+    .tab.active {
+      background: linear-gradient(135deg,rgba(90,172,46,.18),rgba(168,224,99,.04));
+      border-color: var(--green); color: var(--lime);
+    }
+    .tab-label { font-size: .9rem; font-weight: 600; }
+    .tab-sub   { font-size: .67rem; opacity: .6; }
+
+    /* ── Main ── */
+    main { max-width: 800px; margin: 0 auto; padding: 26px 16px 60px; }
+    .panel { display: none; animation: fadeUp .32s ease; }
+    .panel.active { display: block; }
+    @keyframes fadeUp { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:translateY(0)} }
+
+    /* ── Card ── */
+    .card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 16px; padding: 28px;
+    }
+    .card + .card { margin-top: 20px; }
+    .card-title {
+      font-family: 'Noto Serif Tamil', serif;
+      font-size: 1.4rem; font-weight: 700; color: var(--green2); margin-bottom: 6px;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .card-title small { font-family:'Noto Sans Tamil',sans-serif; font-size:.76rem; color:var(--muted); font-weight:400; }
+    .card-desc { color: var(--muted); font-size: .86rem; line-height: 1.7; margin-bottom: 22px; }
+
+    /* ── Waveform ── */
+    .wave { display:flex; align-items:center; justify-content:center; gap:4px; height:42px; margin-bottom:14px; }
+    .wave-bar { width:4px; border-radius:2px; background:var(--border); height:6px; transition:background .3s; }
+    .wave.on .wave-bar { background:var(--green); animation:wv .75s ease-in-out infinite alternate; }
+    @keyframes wv { 0%{height:5px}100%{height:34px} }
+
+    /* ── Mic ── */
+    .mic-wrap { display:flex; flex-direction:column; align-items:center; gap:12px; margin-bottom:22px; }
+    .mic-btn {
+      width:92px; height:92px; border-radius:50%;
+      background:var(--surface); border:2px solid var(--border);
+      display:flex; align-items:center; justify-content:center;
+      transition:all .25s; cursor:pointer;
+    }
+    .mic-btn:hover { border-color:var(--green); box-shadow:0 0 18px rgba(90,172,46,.3); transform:scale(1.06); }
+    .mic-btn.on {
+      background:rgba(90,172,46,.12); border-color:var(--green);
+      animation:micGlow 1.5s infinite;
+    }
+    @keyframes micGlow {
+      0%,100%{box-shadow:0 0 0 8px rgba(90,172,46,.1),0 0 0 16px rgba(90,172,46,.05)}
+      50%{box-shadow:0 0 0 14px rgba(90,172,46,.12),0 0 0 26px rgba(90,172,46,.03)}
+    }
+    .mic-svg { width:36px;height:36px;stroke:var(--green2);fill:none;stroke-width:2; }
+    .mic-btn.on .mic-svg { stroke:var(--lime); }
+    .mic-hint { font-size:.83rem; color:var(--muted); text-align:center; }
+    .interim {
+      font-family:'Noto Serif Tamil',serif; font-size:1rem; color:var(--green2);
+      font-style:italic; text-align:center; max-width:480px; min-height:22px;
+    }
+
+    /* ── Ask button ── */
+    .ask-btn {
+      width:100%; padding:14px; border-radius:10px; font-size:1rem; font-weight:700;
+      background:linear-gradient(135deg, #3d8c1a, #5aac2e);
+      color:#0e1a0a; border:none; cursor:pointer;
+      display:flex; align-items:center; justify-content:center; gap:10px;
+      transition:all .25s; margin-top:18px; font-family:'Noto Sans Tamil',sans-serif;
+    }
+    .ask-btn:hover:not(:disabled) {
+      background:linear-gradient(135deg,#4a9f22,#6ac234);
+      box-shadow:0 4px 18px rgba(90,172,46,.35); transform:translateY(-1px);
+    }
+    .ask-btn:disabled { opacity:.45; cursor:not-allowed; transform:none; }
+    .spinner { width:16px;height:16px;border:2px solid rgba(14,26,10,.3);border-top-color:#0e1a0a;border-radius:50%;animation:spin .7s linear infinite;display:inline-block; }
+    @keyframes spin{to{transform:rotate(360deg)}}
+
+    /* ── Question display ── */
+    .q-box {
+      background:var(--surface); border:1px solid var(--border);
+      border-radius:10px; padding:14px 16px; margin-bottom:16px;
+    }
+    .q-label { font-size:.73rem; color:var(--muted); font-weight:600; letter-spacing:.5px; margin-bottom:6px; }
+    .q-text {
+      font-family:'Noto Serif Tamil',serif; font-size:1.08rem; line-height:1.8; color:var(--text);
+      min-height:40px;
+    }
+    .placeholder-txt { color:var(--muted); font-style:italic; font-size:.88rem; }
+
+    /* ── Answer box ── */
+    .answer-box {
+      background: linear-gradient(135deg,rgba(90,172,46,.06),rgba(168,224,99,.02));
+      border:1px solid rgba(90,172,46,.3); border-radius:12px; padding:20px;
+      margin-top:20px; animation:fadeUp .4s ease;
+    }
+    .answer-header {
+      display:flex; align-items:center; justify-content:space-between;
+      margin-bottom:14px; flex-wrap:wrap; gap:8px;
+    }
+    .answer-title {
+      font-size:.78rem; font-weight:700; color:var(--green2);
+      letter-spacing:.5px; display:flex; align-items:center; gap:6px;
+    }
+    .answer-title::before { content:'🌱'; }
+    .answer-text {
+      font-family:'Noto Serif Tamil',serif; font-size:1.1rem; line-height:2;
+      color:var(--white);
+    }
+    .answer-actions { display:flex; gap:8px; margin-top:14px; flex-wrap:wrap; }
+
+    /* Audio player */
+    .audio-wrap { margin-top:14px; }
+    .audio-label { font-size:.75rem; color:var(--muted); margin-bottom:6px; font-weight:600; }
+    audio { width:100%; accent-color:var(--green); }
+
+    /* Pipeline steps */
+    .pipeline {
+      display:flex; align-items:center; gap:6px;
+      margin-bottom:18px; flex-wrap:wrap; justify-content:center;
+    }
+    .step {
+      display:flex; align-items:center; gap:5px;
+      padding:4px 12px; border-radius:16px; font-size:.72rem; font-weight:600;
+      background:var(--surface); border:1px solid var(--border); color:var(--muted);
+      transition:all .3s;
+    }
+    .step.active { background:rgba(90,172,46,.12); border-color:var(--green); color:var(--green2); }
+    .step.done   { background:rgba(90,172,46,.08); border-color:rgba(90,172,46,.4); color:var(--green2); opacity:.7; }
+    .step-arrow  { color:var(--border); font-size:.8rem; }
+
+    /* Example questions */
+    .examples { margin-bottom:20px; }
+    .examples-label { font-size:.78rem; color:var(--muted); margin-bottom:8px; }
+    .examples-grid { display:flex; flex-wrap:wrap; gap:7px; }
+    .ex-chip {
+      padding:6px 13px; border-radius:18px; background:var(--surface);
+      border:1px solid var(--border); color:var(--muted); font-size:.78rem;
+      cursor:pointer; transition:all .2s; line-height:1.5;
+      font-family:'Noto Sans Tamil',sans-serif;
+    }
+    .ex-chip:hover { border-color:var(--green); color:var(--green2); }
+
+    /* History */
+    .history-head { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:18px; flex-wrap:wrap; gap:8px; }
+    .h-list { display:flex; flex-direction:column; gap:12px; }
+    .h-item {
+      background:var(--surface); border:1px solid var(--border);
+      border-radius:10px; padding:14px 16px; transition:border-color .2s;
+    }
+    .h-item:hover { border-color:var(--green); }
+    .h-q { font-family:'Noto Serif Tamil',serif; font-size:.95rem; color:var(--muted); margin-bottom:8px; padding-bottom:8px; border-bottom:1px solid var(--border); }
+    .h-q::before { content:'❓ '; }
+    .h-a { font-family:'Noto Serif Tamil',serif; font-size:.98rem; color:var(--text); line-height:1.7; margin-bottom:10px; }
+    .h-a::before { content:'🌱 '; }
+    .h-meta { display:flex; gap:8px; align-items:center; margin-bottom:8px; }
+    .h-time { font-size:.7rem; color:var(--muted); }
+    .h-actions { display:flex; gap:7px; }
+
+    .empty-state { text-align:center; padding:55px 20px; color:var(--muted); line-height:2.4; }
+    .empty-state .em { font-size:2.8rem; }
+
+    /* Buttons */
+    .btn {
+      padding:7px 16px; border-radius:7px; font-size:.82rem; font-weight:600;
+      transition:all .2s; cursor:pointer; display:inline-flex; align-items:center;
+      gap:5px; text-decoration:none; border:none; font-family:'Noto Sans Tamil',sans-serif;
+    }
+    .btn:disabled { opacity:.4; cursor:not-allowed; }
+    .btn-primary   { background:rgba(90,172,46,.15); color:var(--green2); border:1px solid var(--green); }
+    .btn-primary:hover:not(:disabled) { background:rgba(90,172,46,.25); }
+    .btn-secondary { background:var(--surface); color:var(--muted); border:1px solid var(--border); }
+    .btn-secondary:hover:not(:disabled) { border-color:var(--green); color:var(--text); }
+    .btn-danger { background:rgba(224,85,85,.1); color:var(--red); border:1px solid rgba(224,85,85,.3); }
+    .btn-danger:hover:not(:disabled) { background:rgba(224,85,85,.2); }
+    .btn-sm { padding:4px 10px; font-size:.74rem; }
+
+    /* Footer */
+    footer {
+      border-top:1px solid var(--border); padding:18px;
+      text-align:center; color:var(--muted); font-size:.74rem; letter-spacing:.3px;
+    }
+
+    /* Responsive */
+    @media(max-width:560px){
+      header::before, header::after { display:none; }
+      .card { padding:18px 14px; }
+      .tab { min-width:108px; padding:8px 10px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="topbar"></div>
+<div id="toast"></div>
+
+<!-- Header -->
+<header>
+  <span class="app-icon">🌾</span>
+  <h1 class="title-ta">உழவன் குரல்<span class="title-en">Uzhavan Kural</span></h1>
+  <p class="tagline">உழவர்களுக்கான AI உதவியாளர் — AI Assistant for Farmers</p>
+  <div class="badges">
+    <div class="badge badge-server" id="serverBadge">
+      <span class="dot"></span><span id="serverTxt">சர்வர் சரிபார்க்கிறது…</span>
+    </div>
+    <div class="badge badge-ollama" id="ollamaBadge">
+      <span class="dot"></span><span id="ollamaTxt">Ollama சரிபார்க்கிறது…</span>
+    </div>
+  </div>
+</header>
+
+<!-- Tabs -->
+<nav>
+  <button class="tab active" onclick="switchTab('ask',this)">
+    <span class="tab-label">🎙 கேள்வி கேளுங்கள்</span>
+    <span class="tab-sub">Ask a Question</span>
+  </button>
+  <button class="tab" onclick="switchTab('history',this)">
+    <span class="tab-label">📜 வரலாறு</span>
+    <span class="tab-sub">History</span>
+  </button>
+  <button class="tab" onclick="switchTab('about',this)">
+    <span class="tab-label">ℹ️ பற்றி</span>
+    <span class="tab-sub">About</span>
+  </button>
+</nav>
+
+<main>
+
+  <!-- ASK Panel -->
+  <div id="panel-ask" class="panel active">
+    <div class="card">
+      <h2 class="card-title">🎙 உங்கள் கேள்வியை பேசுங்கள் <small>Speak your farming question</small></h2>
+      <p class="card-desc">மைக் பொத்தானை அழுத்தி, தமிழில் உங்கள் விவசாய கேள்வியை பேசுங்கள். AI தமிழிலேயே பதில் தரும்.<br>
+      <small style="opacity:.7">Press mic, speak in Tamil. AI answers in Tamil. Works best in Google Chrome.</small></p>
+
+      <!-- Pipeline steps indicator -->
+      <div class="pipeline" id="pipeline" style="display:none">
+        <div class="step" id="s1">🎙 குரல்</div>
+        <span class="step-arrow">→</span>
+        <div class="step" id="s2">🔄 மொழிபெயர்ப்பு</div>
+        <span class="step-arrow">→</span>
+        <div class="step" id="s3">🤖 AI பதில்</div>
+        <span class="step-arrow">→</span>
+        <div class="step" id="s4">🔄 தமிழ்</div>
+        <span class="step-arrow">→</span>
+        <div class="step" id="s5">🔊 குரல்</div>
+      </div>
+
+      <!-- Waveform + Mic -->
+      <div id="wave" class="wave">
+        <div class="wave-bar" style="animation-delay:.00s"></div><div class="wave-bar" style="animation-delay:.07s"></div>
+        <div class="wave-bar" style="animation-delay:.14s"></div><div class="wave-bar" style="animation-delay:.21s"></div>
+        <div class="wave-bar" style="animation-delay:.28s"></div><div class="wave-bar" style="animation-delay:.35s"></div>
+        <div class="wave-bar" style="animation-delay:.42s"></div><div class="wave-bar" style="animation-delay:.49s"></div>
+        <div class="wave-bar" style="animation-delay:.56s"></div><div class="wave-bar" style="animation-delay:.63s"></div>
+        <div class="wave-bar" style="animation-delay:.70s"></div><div class="wave-bar" style="animation-delay:.77s"></div>
+      </div>
+
+      <div class="mic-wrap">
+        <button class="mic-btn" id="micBtn" onclick="toggleMic()">
+          <svg class="mic-svg" viewBox="0 0 24 24">
+            <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+            <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+            <line x1="12" y1="19" x2="12" y2="23"/>
+            <line x1="8" y1="23" x2="16" y2="23"/>
+          </svg>
+        </button>
+        <p class="mic-hint" id="micHint">தொடங்க அழுத்தவும் · Click to start speaking</p>
+        <p class="interim" id="interim"></p>
+      </div>
+
+      <!-- Question box -->
+      <div class="q-box">
+        <div class="q-label">உங்கள் கேள்வி — YOUR QUESTION</div>
+        <div class="q-text" id="questionDisplay">
+          <span class="placeholder-txt">உங்கள் கேள்வி இங்கே தோன்றும்… Your question will appear here</span>
+        </div>
+      </div>
+
+      <!-- Example questions -->
+      <div class="examples">
+        <div class="examples-label">📌 எடுத்துக்காட்டு கேள்விகள் — Example questions:</div>
+        <div class="examples-grid">
+          <button class="ex-chip" onclick="setQuestion('நெல் சாகுபடிக்கு எந்த உரம் நல்லது?')">நெல் சாகுபடி உரம்</button>
+          <button class="ex-chip" onclick="setQuestion('தக்காளி செடியில் பூச்சி தாக்குதலை எப்படி கட்டுப்படுத்துவது?')">தக்காளி பூச்சி</button>
+          <button class="ex-chip" onclick="setQuestion('கோடை காலத்தில் நீர் மேலாண்மை எப்படி செய்வது?')">நீர் மேலாண்மை</button>
+          <button class="ex-chip" onclick="setQuestion('விவசாயிகளுக்கான அரசு திட்டங்கள் என்னென்ன?')">அரசு திட்டங்கள்</button>
+          <button class="ex-chip" onclick="setQuestion('மண் பரிசோதனை ஏன் முக்கியம்?')">மண் பரிசோதனை</button>
+          <button class="ex-chip" onclick="setQuestion('வாழை சாகுபடிக்கு ஏற்ற காலம் எது?')">வாழை சாகுபடி</button>
+        </div>
+      </div>
+
+      <!-- Ask button -->
+      <button class="ask-btn" id="askBtn" onclick="askQuestion()">
+        🌾 பதில் கேளுங்கள் — Get Farming Answer
+      </button>
+
+      <!-- Answer -->
+      <div class="answer-box" id="answerBox" style="display:none">
+        <div class="answer-header">
+          <div class="answer-title">AI விவசாய ஆலோசகர் பதில் — Farming Advisor Answer</div>
+          <div style="display:flex;gap:7px">
+            <button class="btn btn-sm btn-primary" id="playAnswerBtn" onclick="playAnswerAudio()">▶ கேளுங்கள்</button>
+            <button class="btn btn-sm btn-secondary" onclick="copyAnswer()">நகல்</button>
+          </div>
+        </div>
+        <div class="answer-text" id="answerText"></div>
+        <div class="audio-wrap" id="audioWrap" style="display:none">
+          <div class="audio-label">🔊 ஆடியோ — Audio</div>
+          <audio id="audioPlayer" controls></audio>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- HISTORY Panel -->
+  <div id="panel-history" class="panel">
+    <div class="card">
+      <div class="history-head">
+        <h2 class="card-title">📜 கேள்வி வரலாறு <small>Question History</small></h2>
+        <button class="btn btn-sm btn-danger" onclick="clearHistory()">அழி</button>
+      </div>
+      <div id="historyList">
+        <div class="empty-state">
+          <div class="em">🌱</div>
+          வரலாறு இல்லை<br>
+          <small>No history yet. Ask a farming question!</small>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ABOUT Panel -->
+  <div id="panel-about" class="panel">
+    <div class="card">
+      <h2 class="card-title">🌾 உழவன் குரல் பற்றி <small>About Uzhavan Kural</small></h2>
+      <p class="card-desc">தமிழ் விவசாயிகளுக்காக உருவாக்கப்பட்ட AI உதவியாளர்.</p>
+
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:18px;margin-bottom:16px">
+        <div style="font-size:.8rem;color:var(--green2);font-weight:700;margin-bottom:12px;letter-spacing:.5px">🔄 எப்படி வேலை செய்கிறது — HOW IT WORKS</div>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <div style="display:flex;align-items:flex-start;gap:10px">
+            <span style="background:rgba(90,172,46,.15);color:var(--green2);padding:2px 8px;border-radius:10px;font-size:.72rem;font-weight:700;white-space:nowrap">படி 1</span>
+            <span style="font-size:.85rem;color:var(--muted);line-height:1.6">🎙 நீங்கள் தமிழில் பேசுகிறீர்கள் (Web Speech API மூலம் STT)</span>
+          </div>
+          <div style="display:flex;align-items:flex-start;gap:10px">
+            <span style="background:rgba(90,172,46,.15);color:var(--green2);padding:2px 8px;border-radius:10px;font-size:.72rem;font-weight:700;white-space:nowrap">படி 2</span>
+            <span style="font-size:.85rem;color:var(--muted);line-height:1.6">🔄 உங்கள் தமிழ் கேள்வி ஆங்கிலத்தில் மொழிபெயர்க்கப்படுகிறது (LLaMA உள்ளே)</span>
+          </div>
+          <div style="display:flex;align-items:flex-start;gap:10px">
+            <span style="background:rgba(90,172,46,.15);color:var(--green2);padding:2px 8px;border-radius:10px;font-size:.72rem;font-weight:700;white-space:nowrap">படி 3</span>
+            <span style="font-size:.85rem;color:var(--muted);line-height:1.6">🤖 LLaMA விவசாய நிபுணராக ஆங்கிலத்தில் பதில் அளிக்கிறது</span>
+          </div>
+          <div style="display:flex;align-items:flex-start;gap:10px">
+            <span style="background:rgba(90,172,46,.15);color:var(--green2);padding:2px 8px;border-radius:10px;font-size:.72rem;font-weight:700;white-space:nowrap">படி 4</span>
+            <span style="font-size:.85rem;color:var(--muted);line-height:1.6">🔄 ஆங்கில பதில் தமிழில் மொழிபெயர்க்கப்படுகிறது (LLaMA உள்ளே)</span>
+          </div>
+          <div style="display:flex;align-items:flex-start;gap:10px">
+            <span style="background:rgba(90,172,46,.15);color:var(--green2);padding:2px 8px;border-radius:10px;font-size:.72rem;font-weight:700;white-space:nowrap">படி 5</span>
+            <span style="font-size:.85rem;color:var(--muted);line-height:1.6">🔊 தமிழ் பதில் குரலாக மாற்றப்படுகிறது (Google gTTS)</span>
+          </div>
+        </div>
+      </div>
+
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:18px">
+        <div style="font-size:.8rem;color:var(--green2);font-weight:700;margin-bottom:10px;letter-spacing:.5px">⚙️ தொழில்நுட்பம் — TECH STACK</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+          <div style="font-size:.82rem;color:var(--muted)">🖥️ Frontend</div><div style="font-size:.82rem;color:var(--text)">HTML + CSS + JS</div>
+          <div style="font-size:.82rem;color:var(--muted)">⚙️ Backend</div><div style="font-size:.82rem;color:var(--text)">Node.js + Express</div>
+          <div style="font-size:.82rem;color:var(--muted)">🤖 AI Model</div><div style="font-size:.82rem;color:var(--text)">LLaMA 3 (Ollama)</div>
+          <div style="font-size:.82rem;color:var(--muted)">🔊 TTS</div><div style="font-size:.82rem;color:var(--text)">Python gTTS</div>
+          <div style="font-size:.82rem;color:var(--muted)">🎙 STT</div><div style="font-size:.82rem;color:var(--text)">Web Speech API</div>
+          <div style="font-size:.82rem;color:var(--muted)">🌐 Language</div><div style="font-size:.82rem;color:var(--text)">Tamil (ta-IN)</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<footer>உழவன் குரல் · Uzhavan Kural · Tamil Farmer AI Assistant · Node.js + LLaMA (Ollama) + gTTS</footer>
+
+<script>
+// ── State ──────────────────────────────────────────────────────────────────
+let recognition = null;
+let isRecording = false;
+let currentQuestion = '';
+let currentAnswer = '';
+let currentAudioUrl = '';
+let history = [];
+
+// ── Tab switching ──────────────────────────────────────────────────────────
+function switchTab(id, btn) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('panel-' + id).classList.add('active');
+  btn.classList.add('active');
+  if (id === 'history') renderHistory();
+}
+
+// ── Toast ──────────────────────────────────────────────────────────────────
+let toastTimer;
+function toast(msg, type = 'info') {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = type;
+  el.style.display = 'block';
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.style.display = 'none', 4000);
+}
+
+// ── Health check ───────────────────────────────────────────────────────────
+async function checkHealth() {
+  try {
+    const r = await fetch('/health');
+    const d = await r.json();
+    document.getElementById('serverTxt').textContent = 'சர்வர் Online';
+    document.getElementById('ollamaTxt').textContent = d.ollama ? 'Ollama Online ✓' : 'Ollama Offline — run: ollama serve';
+    if (!d.ollama) {
+      document.getElementById('ollamaBadge').style.background = 'rgba(224,85,85,.1)';
+      document.getElementById('ollamaBadge').style.borderColor = 'rgba(224,85,85,.3)';
+      document.getElementById('ollamaBadge').style.color = 'var(--red)';
+    }
+    loadHistory();
+  } catch {
+    document.getElementById('serverTxt').textContent = 'Offline — npm start இயக்கவும்';
+  }
+}
+
+// ── Pipeline UI ────────────────────────────────────────────────────────────
+function setPipelineStep(step) {
+  const el = document.getElementById('pipeline');
+  el.style.display = 'flex';
+  ['s1','s2','s3','s4','s5'].forEach((id, i) => {
+    const s = document.getElementById(id);
+    s.className = 'step' + (i + 1 < step ? ' done' : i + 1 === step ? ' active' : '');
+  });
+}
+function hidePipeline() {
+  document.getElementById('pipeline').style.display = 'none';
+}
+
+// ── Mic ────────────────────────────────────────────────────────────────────
+function toggleMic() {
+  if (!('SpeechRecognition' in window) && !('webkitSpeechRecognition' in window)) {
+    toast('Google Chrome மட்டுமே ஆதரிக்கிறது!', 'error'); return;
+  }
+  if (isRecording) stopMic();
+  else startMic();
+}
+
+function startMic() {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  recognition = new SR();
+  recognition.lang = 'ta-IN';
+  recognition.continuous = false;
+  recognition.interimResults = true;
+
+  recognition.onstart = () => {
+    isRecording = true;
+    document.getElementById('micBtn').classList.add('on');
+    document.getElementById('wave').classList.add('on');
+    document.getElementById('micHint').textContent = '🔴 கேட்கிறது… பேசுங்கள்!';
+    document.getElementById('answerBox').style.display = 'none';
+    hidePipeline();
+  };
+
+  recognition.onresult = (e) => {
+    let final = '', interim = '';
+    for (let i = e.resultIndex; i < e.results.length; i++) {
+      if (e.results[i].isFinal) final += e.results[i][0].transcript;
+      else interim += e.results[i][0].transcript;
+    }
+    if (final) {
+      currentQuestion = final.trim();
+      setQuestionDisplay(currentQuestion);
+      document.getElementById('interim').textContent = '';
+    } else {
+      document.getElementById('interim').textContent = interim;
+    }
+  };
+
+  recognition.onerror = (e) => { stopMic(); if (e.error !== 'no-speech') toast('பிழை: ' + e.error, 'error'); };
+  recognition.onend = () => stopMic();
+  recognition.start();
+}
+
+function stopMic() {
+  isRecording = false;
+  if (recognition) { try { recognition.stop(); } catch{} recognition = null; }
+  document.getElementById('micBtn').classList.remove('on');
+  document.getElementById('wave').classList.remove('on');
+  document.getElementById('micHint').textContent = 'தொடங்க அழுத்தவும் · Click to start speaking';
+  document.getElementById('interim').textContent = '';
+}
+
+function setQuestionDisplay(text) {
+  const el = document.getElementById('questionDisplay');
+  el.innerHTML = text
+    ? `<span style="font-family:'Noto Serif Tamil',serif">${escHtml(text)}</span>`
+    : `<span class="placeholder-txt">உங்கள் கேள்வி இங்கே தோன்றும்… Your question will appear here</span>`;
+}
+
+function setQuestion(text) {
+  currentQuestion = text;
+  setQuestionDisplay(text);
+  toast('கேள்வி அமைக்கப்பட்டது!', 'info');
+}
+
+// ── Ask AI ─────────────────────────────────────────────────────────────────
+async function askQuestion() {
+  if (!currentQuestion.trim()) {
+    toast('முதலில் கேள்வியை பேசுங்கள் அல்லது எடுத்துக்காட்டை தேர்ந்தெடுங்கள்!', 'error');
+    return;
+  }
+
+  const btn = document.getElementById('askBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> AI யோசிக்கிறது… Processing…';
+  document.getElementById('answerBox').style.display = 'none';
+
+  // Show pipeline
+  setPipelineStep(1);
+
+  try {
+    // Animate through pipeline steps with small delays for UX
+    setTimeout(() => setPipelineStep(2), 500);
+    setTimeout(() => setPipelineStep(3), 1500);
+
+    const res = await fetch('/api/ask', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ question: currentQuestion })
+    });
+
+    setPipelineStep(4);
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'பிழை ஏற்பட்டது');
+
+    setPipelineStep(5);
+    currentAnswer = data.tamilAnswer;
+    currentAudioUrl = data.audioUrl || '';
+
+    // Show answer
+    document.getElementById('answerText').innerHTML =
+      `<span style="font-family:'Noto Serif Tamil',serif">${escHtml(data.tamilAnswer)}</span>`;
+    document.getElementById('answerBox').style.display = 'block';
+
+    if (data.audioUrl) {
+      document.getElementById('audioPlayer').src = data.audioUrl;
+      document.getElementById('audioWrap').style.display = 'block';
+    } else {
+      document.getElementById('audioWrap').style.display = 'none';
+    }
+
+    // Save to history
+    history.unshift({
+      id: Date.now(),
+      time: new Date().toLocaleTimeString('ta-IN'),
+      question: currentQuestion,
+      answer: data.tamilAnswer,
+      audioUrl: data.audioUrl || null
+    });
+    if (history.length > 30) history.pop();
+    saveHistory();
+
+    toast('பதில் தயார்! ▶ கேளுங்கள்', 'success');
+    setTimeout(hidePipeline, 1000);
+
+  } catch (err) {
+    hidePipeline();
+    toast('பிழை: ' + err.message, 'error');
+    console.error(err);
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '🌾 பதில் கேளுங்கள் — Get Farming Answer';
+  }
+}
+
+function playAnswerAudio() {
+  if (!currentAudioUrl) { toast('ஆடியோ இல்லை', 'error'); return; }
+  const a = new Audio(currentAudioUrl);
+  a.play().catch(() => toast('ஆடியோ இயக்க முடியவில்லை.', 'error'));
+}
+
+function copyAnswer() {
+  if (!currentAnswer) return;
+  navigator.clipboard.writeText(currentAnswer).then(() => toast('நகலெடுக்கப்பட்டது! ✓', 'success'));
+}
+
+// ── History ────────────────────────────────────────────────────────────────
+async function loadHistory() {
+  try {
+    const r = await fetch('/api/history');
+    const d = await r.json();
+    history = d.entries || [];
+    renderHistory();
+  } catch {}
+}
+
+async function saveHistory() {
+  try {
+    await fetch('/api/history/save', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ entries: history })
+    });
+  } catch {}
+}
+
+function renderHistory() {
+  const el = document.getElementById('historyList');
+  if (!history.length) {
+    el.innerHTML = `<div class="empty-state"><div class="em">🌱</div>வரலாறு இல்லை<br><small>Ask a farming question to see history!</small></div>`;
+    return;
+  }
+  el.innerHTML = `<div class="h-list">${history.map(item => `
+    <div class="h-item">
+      <div class="h-meta">
+        <span class="h-time">${item.time}</span>
+      </div>
+      <div class="h-q">${escHtml(item.question)}</div>
+      <div class="h-a">${escHtml(item.answer)}</div>
+      <div class="h-actions">
+        ${item.audioUrl ? `<button class="btn btn-sm btn-primary" onclick="playAudioUrl('${item.audioUrl}')">▶ கேள்</button>` : ''}
+        <button class="btn btn-sm btn-danger" onclick="deleteHistory(${item.id})">✕</button>
+      </div>
+    </div>
+  `).join('')}</div>`;
+}
+
+function deleteHistory(id) {
+  history = history.filter(e => e.id !== id);
+  saveHistory(); renderHistory();
+}
+
+function clearHistory() {
+  history = []; saveHistory(); renderHistory();
+  toast('வரலாறு அழிக்கப்பட்டது', 'info');
+}
+
+function playAudioUrl(url) {
+  new Audio(url).play().catch(() => toast('ஆடியோ இயக்க முடியவில்லை.', 'error'));
+}
+
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// Init
+checkHealth();
+</script>
+</body>
+</html>
